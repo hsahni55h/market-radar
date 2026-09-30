@@ -9,8 +9,8 @@
 | Field | Value |
 | --- | --- |
 | Current version | v1 — Market Scanner + Discord alerts |
-| Current step | Step 5 — Scan runner and CLI |
-| Last session log | `2026-09-30-step-04-discord-alerts.md` |
+| Current step | Step 7 — Scheduled cloud runs (GitHub Actions) |
+| Last session log | `2026-09-30-step-06-market-calendar.md` |
 | Last updated | 2026-09-30 |
 
 ## v1 goal
@@ -116,33 +116,34 @@ family members received a push notification.
 
 ---
 
-## Step 5 — Scan runner and CLI
+## Step 5 — Scan runner and CLI ✅ DONE
 
 **Branch:** `feature/step-05-runner`
 **Goal:** one command runs the whole pipeline end to end.
 
 Scope:
-- [ ] `src/market_radar/run_scan.py`: `run_scan(provider, notifier, settings) -> ScanResult` — dependencies are passed in, not created inside, so it is testable
-- [ ] CLI via `argparse` in `__main__.py`: `uv run python -m market_radar scan [--dry-run]`
-- [ ] Clear exit codes (0 success, non-zero failure) and a one-line run summary in the log
-- [ ] If fewer than a configurable share of quotes succeed, send a warning instead of a misleading list
-- [ ] Tests: full pipeline with fake provider and fake notifier
+- [x] `src/market_radar/run_scan.py`: `run_scan(provider, notifier, settings) -> ScanResult` — dependencies are passed in, not created inside, so it is testable
+- [x] CLI via `argparse` in `__main__.py`: `uv run python -m market_radar scan [--dry-run]`
+- [x] Clear exit codes (0 success, non-zero failure) and a one-line run summary in the log
+- [x] If fewer than a configurable share of quotes succeed, send a warning instead of a misleading list
+- [x] Tests: full pipeline with fake provider and fake notifier
 
-Acceptance: `scan --dry-run` prints the message; `scan` posts it to Discord.
+Acceptance: ✅ `scan --dry-run` prints the message; `scan` posted it to Discord (verified live on a
+personal laptop, with the webhook URL no longer logged).
 
 ---
 
-## Step 6 — Market calendar
+## Step 6 — Market calendar ✅ DONE
 
 **Branch:** `feature/step-06-market-calendar`
 **Goal:** never run or alert on weekends and NSE holidays.
 
 Scope:
-- [ ] `data/reference/nse_holidays_2026.csv` (and 2027 when published)
-- [ ] `src/market_radar/market_calendar.py`: `is_trading_day(date) -> bool`, IST-aware
-- [ ] If the holiday file for the current year is missing, log a warning and treat weekdays as trading days
-- [ ] `run_scan` exits early with a log line on non-trading days
-- [ ] Tests: weekend, holiday, normal day, missing year file
+- [x] `data/reference/nse_holidays_2026.csv` (and 2027 when published)
+- [x] `src/market_radar/market_calendar.py`: `is_trading_day(date) -> bool`, IST-aware
+- [x] If the holiday file for the current year is missing, log a warning and treat weekdays as trading days
+- [x] `run_scan` exits early with a log line on non-trading days
+- [x] Tests: weekend, holiday, normal day, missing year file
 
 Acceptance: running on a Saturday or holiday logs "market closed" and sends nothing.
 

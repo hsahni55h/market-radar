@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     timezone: str = "Asia/Kolkata"
     top_n: int = 10
     universe_csv_path: Path = Path("data/reference/nifty500.csv")
+    holidays_csv_path: Path = Path("data/reference/nse_holidays_2026.csv")
     min_success_ratio: float = 0.8
     discord_webhook_url: SecretStr | None = None
 

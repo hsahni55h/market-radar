@@ -15,6 +15,7 @@ def test_settings_load_defaults(monkeypatch: MonkeyPatch) -> None:
         "TIMEZONE",
         "TOP_N",
         "UNIVERSE_CSV_PATH",
+        "HOLIDAYS_CSV_PATH",
         "MIN_SUCCESS_RATIO",
         "DISCORD_WEBHOOK_URL",
     ):
@@ -27,6 +28,7 @@ def test_settings_load_defaults(monkeypatch: MonkeyPatch) -> None:
     assert settings.timezone == "Asia/Kolkata"
     assert settings.top_n == 10
     assert settings.universe_csv_path == Path("data/reference/nifty500.csv")
+    assert settings.holidays_csv_path == Path("data/reference/nse_holidays_2026.csv")
     assert settings.min_success_ratio == 0.8
     assert settings.discord_webhook_url is None
 
