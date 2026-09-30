@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     app_env: str = "dev"
     log_level: str = "INFO"
     timezone: str = "Asia/Kolkata"
+    top_n: int = 10
     telegram_bot_token: SecretStr | None = None
     telegram_chat_id: str | None = None
 

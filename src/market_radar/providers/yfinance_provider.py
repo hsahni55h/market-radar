@@ -23,15 +23,17 @@ class YFinancePriceProvider(PriceProvider):
     """Fetch end-of-day price data in one yfinance batch request."""
 
     def get_quotes(self, symbols: Sequence[str]) -> QuoteBatch:
-        """Fetch the latest close and its preceding close for every requested symbol."""
+        """Fetch prices for plain NSE symbols and return results using those symbols."""
         requested_symbols = tuple(symbols)
         if not requested_symbols:
             return QuoteBatch(quotes=(), failed_symbols=())
 
+        provider_symbols = tuple(to_provider_symbol(symbol) for symbol in requested_symbols)
+
         started_at = perf_counter()
         try:
             prices = yf.download(
-                tickers=list(requested_symbols),
+                tickers=list(provider_symbols),
                 period="5d",
                 interval="1d",
                 group_by="ticker",
@@ -54,7 +56,8 @@ class YFinancePriceProvider(PriceProvider):
         quotes: list[Quote] = []
         failed_symbols: list[str] = []
         for symbol in requested_symbols:
-            quote = _quote_from_prices(prices, symbol, as_of)
+            provider_symbol = to_provider_symbol(symbol)
+            quote = _quote_from_prices(prices, provider_symbol, symbol, as_of)
             if quote is None:
                 logger.warning("Missing or invalid price data for %s", symbol)
                 failed_symbols.append(symbol)
@@ -64,9 +67,14 @@ class YFinancePriceProvider(PriceProvider):
         return QuoteBatch(quotes=tuple(quotes), failed_symbols=tuple(failed_symbols))
 
 
-def _quote_from_prices(prices: pd.DataFrame, symbol: str, as_of: datetime) -> Quote | None:
+def _quote_from_prices(
+    prices: pd.DataFrame,
+    provider_symbol: str,
+    symbol: str,
+    as_of: datetime,
+) -> Quote | None:
     try:
-        closes = prices[symbol]["Close"].dropna()
+        closes = prices[provider_symbol]["Close"].dropna()
     except (KeyError, TypeError):
         return None
 

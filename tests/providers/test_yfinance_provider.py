@@ -14,31 +14,51 @@ def test_to_provider_symbol_adds_nse_suffix() -> None:
     assert to_provider_symbol("RELIANCE") == "RELIANCE.NS"
 
 
-def test_get_quotes_returns_valid_quotes_and_failed_symbols(
+def test_get_quotes_converts_plain_symbols_for_yfinance(
     monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
 ) -> None:
-    """A batch preserves valid quotes when another symbol has invalid prices."""
+    """The yfinance request receives NSE symbols with its required suffix."""
     caplog.set_level(logging.INFO)
     columns = pd.MultiIndex.from_tuples([("RELIANCE.NS", "Close"), ("MISSING.NS", "Close")])
     prices = pd.DataFrame(
         [[1_425.10, 100.0], [1_455.25, float("nan")]],
         columns=columns,
     )
-    download = _download_returning(prices)
+    captured_tickers: list[str] = []
+    download = _download_returning(prices, captured_tickers)
     monkeypatch.setattr(
         "market_radar.providers.yfinance_provider.yf.download",
         download,
     )
 
-    batch = YFinancePriceProvider().get_quotes(["RELIANCE.NS", "MISSING.NS"])
+    YFinancePriceProvider().get_quotes(["RELIANCE", "MISSING"])
+
+    assert captured_tickers == ["RELIANCE.NS", "MISSING.NS"]
+    assert "Fetched price data for 2 symbols" in caplog.text
+
+
+def test_get_quotes_returns_plain_symbols_in_quotes_and_failures(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A batch preserves valid plain symbols when another symbol has invalid prices."""
+    columns = pd.MultiIndex.from_tuples([("RELIANCE.NS", "Close"), ("MISSING.NS", "Close")])
+    prices = pd.DataFrame(
+        [[1_425.10, 100.0], [1_455.25, float("nan")]],
+        columns=columns,
+    )
+    monkeypatch.setattr(
+        "market_radar.providers.yfinance_provider.yf.download",
+        _download_returning(prices),
+    )
+
+    batch = YFinancePriceProvider().get_quotes(["RELIANCE", "MISSING"])
 
     assert len(batch.quotes) == 1
-    assert batch.quotes[0].symbol == "RELIANCE.NS"
+    assert batch.quotes[0].symbol == "RELIANCE"
     assert batch.quotes[0].last_price == 1_455.25
     assert batch.quotes[0].previous_close == 1_425.10
     assert batch.quotes[0].as_of.tzinfo is not None
-    assert batch.failed_symbols == ("MISSING.NS",)
-    assert "Fetched price data for 2 symbols" in caplog.text
+    assert batch.failed_symbols == ("MISSING",)
 
 
 def test_get_quotes_returns_all_symbols_when_download_fails(
@@ -50,10 +70,10 @@ def test_get_quotes_returns_all_symbols_when_download_fails(
         _download_raising,
     )
 
-    batch = YFinancePriceProvider().get_quotes(["RELIANCE.NS", "TCS.NS"])
+    batch = YFinancePriceProvider().get_quotes(["RELIANCE", "TCS"])
 
     assert batch.quotes == ()
-    assert batch.failed_symbols == ("RELIANCE.NS", "TCS.NS")
+    assert batch.failed_symbols == ("RELIANCE", "TCS")
 
 
 def test_get_quotes_does_not_download_empty_symbol_list(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -72,14 +92,25 @@ def test_get_quotes_does_not_download_empty_symbol_list(monkeypatch: pytest.Monk
 @pytest.mark.integration
 def test_get_quotes_fetches_real_quote() -> None:
     """The provider retrieves a quote from yfinance when the network is available."""
-    batch = YFinancePriceProvider().get_quotes(["RELIANCE.NS"])
+    batch = YFinancePriceProvider().get_quotes(["RELIANCE"])
 
     assert len(batch.quotes) == 1
     assert batch.failed_symbols == ()
 
 
-def _download_returning(prices: pd.DataFrame) -> Callable[..., pd.DataFrame]:
-    def download(**_: object) -> pd.DataFrame:
+def _download_returning(
+    prices: pd.DataFrame,
+    captured_tickers: list[str] | None = None,
+) -> Callable[..., pd.DataFrame]:
+    def download(**kwargs: object) -> pd.DataFrame:
+        tickers = kwargs["tickers"]
+        if captured_tickers is not None:
+            if not isinstance(tickers, list):
+                raise TypeError("tickers must be a list of strings")
+            string_tickers = [ticker for ticker in tickers if isinstance(ticker, str)]
+            if len(string_tickers) != len(tickers):
+                raise TypeError("tickers must be a list of strings")
+            captured_tickers.extend(string_tickers)
         return prices
 
     return download

@@ -8,7 +8,7 @@ from typing import Protocol
 
 @dataclass(frozen=True, slots=True)
 class Quote:
-    """A latest price and previous close for one provider-formatted symbol."""
+    """A latest price and previous close for one canonical market symbol."""
 
     symbol: str
     last_price: float
@@ -28,4 +28,4 @@ class PriceProvider(Protocol):
     """Fetch market prices without exposing a provider-specific API to callers."""
 
     def get_quotes(self, symbols: Sequence[str]) -> QuoteBatch:
-        """Return quotes and symbols that could not be fetched."""
+        """Return quotes and failed symbols using the supplied canonical symbols."""
