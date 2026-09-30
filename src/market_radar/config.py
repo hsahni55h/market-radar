@@ -15,8 +15,7 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     timezone: str = "Asia/Kolkata"
     top_n: int = 10
-    telegram_bot_token: SecretStr | None = None
-    telegram_chat_id: str | None = None
+    discord_webhook_url: SecretStr | None = None
 
 
 @lru_cache
