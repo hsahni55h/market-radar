@@ -1,0 +1,39 @@
+name: Scheduled scan
+
+on:
+  schedule:
+    # Times are UTC; IST is UTC+5:30. Monday–Friday only.
+    - cron: "45 4-9 * * 1-5" # 10:15–15:15 IST, hourly
+    - cron: "5 10 * * 1-5" # 15:35 IST closing scan
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Print the alert to the log instead of sending it to Discord"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: scheduled-scan
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      - run: uv sync --frozen
+      - name: Run market scan
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          MIN_SUCCESS_RATIO: ${{ vars.MIN_SUCCESS_RATIO }}
+        run: >-
+          uv run python -m market_radar scan
+          ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run) && '--dry-run' || '' }}

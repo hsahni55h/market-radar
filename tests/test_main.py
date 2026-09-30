@@ -46,6 +46,24 @@ def test_run_scan_command_returns_config_error_without_webhook() -> None:
     assert exit_code == cli.EXIT_CONFIG_ERROR
 
 
+def test_empty_webhook_exits_config_error_without_sending(monkeypatch: MonkeyPatch) -> None:
+    """An empty DISCORD_WEBHOOK_URL is treated as unset: exit code 2 and no send attempted."""
+    monkeypatch.setenv("DISCORD_WEBHOOK_URL", "")
+    settings = Settings(_env_file=None)
+
+    def fail_if_called(
+        provider: PriceProvider, notifier: Notifier, settings: Settings, *, force: bool = False
+    ) -> ScanResult:
+        raise AssertionError("run_scan must not be called when the webhook is unset")
+
+    monkeypatch.setattr(cli, "run_scan", fail_if_called)
+
+    exit_code = cli._run_scan_command(settings, dry_run=False)
+
+    assert settings.discord_webhook_url is None
+    assert exit_code == cli.EXIT_CONFIG_ERROR
+
+
 def test_run_scan_command_maps_delivery_failure_to_failure_code(monkeypatch: MonkeyPatch) -> None:
     """A Discord delivery failure exits non-zero without leaking the webhook."""
 
