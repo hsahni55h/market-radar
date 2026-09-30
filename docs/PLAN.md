@@ -9,8 +9,8 @@
 | Field | Value |
 | --- | --- |
 | Current version | v1 — Market Scanner + Discord alerts |
-| Current step | Step 4 — Message formatting and Discord notifier |
-| Last session log | `2026-09-30-step-03-scanner-logic.md` |
+| Current step | Step 5 — Scan runner and CLI |
+| Last session log | `2026-09-30-step-04-discord-alerts.md` |
 | Last updated | 2026-09-30 |
 
 ## v1 goal
@@ -95,24 +95,24 @@ Acceptance: tests pass; a manual run prints both top-10 lists in the terminal.
 
 ---
 
-## Step 4 — Message formatting and Discord notifier
+## Step 4 — Message formatting and Discord notifier ✅ DONE
 
 **Branch:** `feature/step-04-discord`
 **Goal:** turn a `ScanResult` into a readable message and post it to the family Discord channel.
 
 Scope:
-- [ ] User creates the family Discord server, a private `#market-scanner` channel and a webhook for it, and puts the webhook URL in `.env`
-- [ ] Replace the Telegram fields in `Settings` and `.env.example` with `discord_webhook_url: SecretStr | None`
-- [ ] `src/market_radar/alerts/message.py`: a channel-neutral frozen dataclass `AlertMessage` (title, sections with headings and lines, footer, timestamp) — so the same message can later go to email or other channels
-- [ ] `src/market_radar/formatter.py`: pure function `format_scan(result) -> AlertMessage` (time in IST, gainers, losers, scanned/skipped counts)
-- [ ] `src/market_radar/alerts/base.py`: `Notifier` Protocol with `send(message: AlertMessage) -> None`
-- [ ] `src/market_radar/alerts/discord.py`: renders `AlertMessage` as a Discord embed (gainers and losers as two fields) and posts it via `httpx` (add via `uv add`); timeout, simple retry, respects HTTP 429 rate-limit responses; stays within Discord's embed size limits
-- [ ] `ConsoleNotifier` that logs the message instead of sending it (used for dry runs)
-- [ ] The webhook URL is a secret: never logged, never printed in errors
-- [ ] Tests: formatter tests; Discord payload-building tests; notifier tested with a mocked HTTP client
+- [x] User creates the family Discord server, a private `#market-scanner` channel and a webhook for it, and puts the webhook URL in `.env`
+- [x] Replace the Telegram fields in `Settings` and `.env.example` with `discord_webhook_url: SecretStr | None`
+- [x] `src/market_radar/alerts/message.py`: a channel-neutral frozen dataclass `AlertMessage` (title, sections with headings and lines, footer, timestamp) — so the same message can later go to email or other channels
+- [x] `src/market_radar/formatter.py`: pure function `format_scan(result) -> AlertMessage` (time in IST, gainers, losers, scanned/skipped counts)
+- [x] `src/market_radar/alerts/base.py`: `Notifier` Protocol with `send(message: AlertMessage) -> None`
+- [x] `src/market_radar/alerts/discord.py`: renders `AlertMessage` as a Discord embed (gainers and losers as two fields) and posts it via `httpx` (add via `uv add`); timeout, simple retry, respects HTTP 429 rate-limit responses; stays within Discord's embed size limits
+- [x] `ConsoleNotifier` that logs the message instead of sending it (used for dry runs)
+- [x] The webhook URL is a secret: never logged, never printed in errors
+- [x] Tests: formatter tests; Discord payload-building tests; notifier tested with a mocked HTTP client
 
-Acceptance: a test message appears in `#market-scanner` and looks right on a phone, and all three
-family members receive a push notification for it.
+Acceptance: ✅ A test message appeared in `#market-scanner`, looked right on a phone, and all three
+family members received a push notification.
 
 ---
 

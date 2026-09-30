@@ -1,6 +1,7 @@
 """Application configuration loaded from the environment."""
 
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -15,6 +16,8 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     timezone: str = "Asia/Kolkata"
     top_n: int = 10
+    universe_csv_path: Path = Path("data/reference/nifty500.csv")
+    min_success_ratio: float = 0.8
     discord_webhook_url: SecretStr | None = None
 
 

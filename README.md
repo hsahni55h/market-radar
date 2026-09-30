@@ -21,5 +21,6 @@ make format     # Apply lint and formatting fixes
 make typecheck  # Run strict type checking
 make test       # Run tests with coverage
 make check      # Run all validation checks
-make run        # Start the application
+make run        # Run a scan and post the alert to Discord
+make dry-run    # Run a scan and print the alert to the console
 ```

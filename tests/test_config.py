@@ -1,5 +1,7 @@
 """Tests for application settings."""
 
+from pathlib import Path
+
 from pytest import MonkeyPatch
 
 from market_radar.config import Settings
@@ -12,6 +14,8 @@ def test_settings_load_defaults(monkeypatch: MonkeyPatch) -> None:
         "LOG_LEVEL",
         "TIMEZONE",
         "TOP_N",
+        "UNIVERSE_CSV_PATH",
+        "MIN_SUCCESS_RATIO",
         "DISCORD_WEBHOOK_URL",
     ):
         monkeypatch.delenv(variable, raising=False)
@@ -22,6 +26,8 @@ def test_settings_load_defaults(monkeypatch: MonkeyPatch) -> None:
     assert settings.log_level == "INFO"
     assert settings.timezone == "Asia/Kolkata"
     assert settings.top_n == 10
+    assert settings.universe_csv_path == Path("data/reference/nifty500.csv")
+    assert settings.min_success_ratio == 0.8
     assert settings.discord_webhook_url is None
 
 
