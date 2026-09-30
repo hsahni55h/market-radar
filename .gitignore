@@ -48,3 +48,10 @@ data/raw/
 .vscode/*
 !.vscode/settings.json
 .DS_Store
+
+# --- Local-only AI workflow docs (never committed) ---
+docs/PLAN.md
+docs/DECISIONS.md
+docs/sessions/
+.github/copilot-instructions.md
+.github/prompts/
