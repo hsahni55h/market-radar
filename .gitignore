@@ -50,8 +50,6 @@ data/raw/
 .DS_Store
 
 # --- Local-only AI workflow docs (never committed) ---
-docs/PLAN.md
-docs/DECISIONS.md
-docs/sessions/
+docs/
 .github/copilot-instructions.md
 .github/prompts/
