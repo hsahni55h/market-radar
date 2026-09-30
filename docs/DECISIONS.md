@@ -5,6 +5,13 @@ Newest first. Format: ID, date, decision, reason, consequences.
 
 ---
 
+### D-010 · 2026-09-30 · Removed the DUMMYHEG and BAGMANE rows from the Nifty 500 reference file
+**Decision:** removed `DUMMYHEG` (Dummy HEG Ltd., ISIN `DUM545A01024`) because it is a placeholder row, not a real listed company, and returns no data on Yahoo. Also removed `BAGMANE` (Bagmane Prime Office REIT): it trades on BSE (`BAGMANE.BO` on Yahoo) but not on NSE via Yahoo, and our provider only queries `.NS`, so it failed every scan. It can be restored if a BSE fallback is added or the data source changes.
+**Reason:** the universe should contain only instruments that return usable data through the current provider; both rows were guaranteed to fail every scan.
+**Consequences:** the file is otherwise the official NSE list — note these removals (and re-check BAGMANE's NSE availability) when refreshing it.
+
+---
+
 ### D-009 · 2026-09-30 · NSE ticker formatting belongs to the yfinance provider
 **Decision:** `YFinancePriceProvider` accepts and returns plain NSE symbols, converting to the `.NS` yfinance format internally; the universe module remains provider-neutral.
 **Reason:** the Nifty 500 universe is provider-neutral; ticker suffixes are a yfinance implementation detail.

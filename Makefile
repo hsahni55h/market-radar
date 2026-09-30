@@ -1,4 +1,4 @@
-.PHONY: install lint format typecheck test check run
+.PHONY: install lint format typecheck test check run dry-run
 
 install:
 	uv sync
@@ -21,4 +21,7 @@ test:
 check: lint typecheck test
 
 run:
-	uv run python -m market_radar
+	uv run python -m market_radar scan
+
+dry-run:
+	uv run python -m market_radar scan --dry-run
