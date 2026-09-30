@@ -48,3 +48,21 @@ def test_settings_environment_override(monkeypatch: MonkeyPatch) -> None:
         settings.discord_webhook_url.get_secret_value()
         == "https://discord.com/api/webhooks/id/token"
     )
+
+
+def test_empty_min_success_ratio_falls_back_to_default(monkeypatch: MonkeyPatch) -> None:
+    """An empty MIN_SUCCESS_RATIO is ignored so the default applies instead of failing to parse."""
+    monkeypatch.setenv("MIN_SUCCESS_RATIO", "")
+
+    settings = Settings(_env_file=None)
+
+    assert settings.min_success_ratio == 0.8
+
+
+def test_empty_discord_webhook_is_treated_as_unset(monkeypatch: MonkeyPatch) -> None:
+    """An empty DISCORD_WEBHOOK_URL is treated as not configured rather than a blank secret."""
+    monkeypatch.setenv("DISCORD_WEBHOOK_URL", "")
+
+    settings = Settings(_env_file=None)
+
+    assert settings.discord_webhook_url is None

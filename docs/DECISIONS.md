@@ -5,6 +5,15 @@ Newest first. Format: ID, date, decision, reason, consequences.
 
 ---
 
+---
+
+### D-012 · 2026-09-30 · Scheduled cloud runs via GitHub Actions
+**Decision:** a `schedule` + `workflow_dispatch` workflow (`.github/workflows/scan.yml`) runs the scan in the cloud. Two UTC cron lines, Monday–Friday: `45 4-9 * * 1-5` (10:15–15:15 IST, hourly) and `5 10 * * 1-5` (15:35 IST closing scan). It does not run on push or pull_request (`ci.yml` owns those). Manual runs expose a boolean `dry_run` input (default `true`); the scan appends `--dry-run` only when `github.event_name == 'workflow_dispatch' && inputs.dry_run`, so scheduled runs (where inputs are empty) always send for real. `DISCORD_WEBHOOK_URL` comes from a repository secret and `MIN_SUCCESS_RATIO` from a repository variable; empty values are ignored via `env_ignore_empty=True` in `Settings`. Guard rails: `timeout-minutes: 10`, a `concurrency` group with `cancel-in-progress: false` so runs never overlap, and `permissions: contents: read`. The workflow does not decide holidays — the app does, exiting early on non-trading days (D-011). Action majors pinned to current releases: `actions/checkout@v7`, `astral-sh/setup-uv@v10`.
+**Reason:** free, serverless scheduling with no laptop; a manual dry-run button allows safe testing without spamming the channel; letting the app own the holiday check keeps one source of truth (the calendar) rather than duplicating it in cron.
+**Consequences:** scheduled runs may start a few minutes late (GitHub caveat; quantify in Step 9). The holiday skip means most non-trading weekday runs still spin up a job that exits early — cheap and acceptable. The secret and variable must exist in repository settings before the first run.
+
+---
+
 ### D-011 · 2026-09-30 · Trading-day calendar is IST-aware, pure, and caller-driven
 **Decision:** `market_calendar.is_trading_day(day, holidays)` is pure and takes the date as an argument; `load_holidays(path)` is the only I/O. `run_scan` computes "today" from the configured timezone (`Asia/Kolkata`), not the laptop's local date, and exits early (sending nothing, exit code 0) on weekends and dates listed in `data/reference/nse_holidays_2026.csv`. A missing holiday file logs a warning and treats weekdays as trading days rather than crashing. Weekends are non-trading regardless of the CSV. A `--force` flag on `scan` skips the check so the app can be tested on non-trading days. Market-hours logic is deliberately out of scope; the Step 7 schedule owns the hours.
 **Reason:** the user is in a different timezone from the market, so the date must be India's; tests must never depend on the real clock; and a missing file should degrade gracefully.
