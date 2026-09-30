@@ -50,7 +50,7 @@ def test_run_scan_command_maps_delivery_failure_to_failure_code(monkeypatch: Mon
     """A Discord delivery failure exits non-zero without leaking the webhook."""
 
     def fake_run_scan(
-        provider: PriceProvider, notifier: Notifier, settings: Settings
+        provider: PriceProvider, notifier: Notifier, settings: Settings, *, force: bool = False
     ) -> ScanResult:
         raise DiscordNotificationError("Discord alert delivery failed")
 
@@ -65,7 +65,7 @@ def test_run_scan_command_returns_success(monkeypatch: MonkeyPatch) -> None:
     """A completed scan returns the success exit code."""
 
     def fake_run_scan(
-        provider: PriceProvider, notifier: Notifier, settings: Settings
+        provider: PriceProvider, notifier: Notifier, settings: Settings, *, force: bool = False
     ) -> ScanResult:
         return _empty_result()
 

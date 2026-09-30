@@ -36,14 +36,19 @@ def main() -> int:
         action="store_true",
         help="Log the alert to the console instead of sending it to Discord.",
     )
+    scan_parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Run even on a weekend or NSE holiday, skipping the trading-day check.",
+    )
     args = parser.parse_args()
 
     if args.command == "scan":
-        return _run_scan_command(settings, dry_run=bool(args.dry_run))
+        return _run_scan_command(settings, dry_run=bool(args.dry_run), force=bool(args.force))
     return EXIT_FAILURE
 
 
-def _run_scan_command(settings: Settings, *, dry_run: bool) -> int:
+def _run_scan_command(settings: Settings, *, dry_run: bool, force: bool = False) -> int:
     provider = YFinancePriceProvider()
     try:
         notifier = _build_notifier(settings, dry_run=dry_run)
@@ -52,7 +57,7 @@ def _run_scan_command(settings: Settings, *, dry_run: bool) -> int:
         return EXIT_CONFIG_ERROR
 
     try:
-        run_scan(provider, notifier, settings)
+        run_scan(provider, notifier, settings, force=force)
     except DiscordNotificationError as error:
         logger.error("Alert delivery failed: %s", error)
         return EXIT_FAILURE
