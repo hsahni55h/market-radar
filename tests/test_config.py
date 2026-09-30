@@ -11,6 +11,7 @@ def test_settings_load_defaults(monkeypatch: MonkeyPatch) -> None:
         "APP_ENV",
         "LOG_LEVEL",
         "TIMEZONE",
+        "TOP_N",
         "TELEGRAM_BOT_TOKEN",
         "TELEGRAM_CHAT_ID",
     ):
@@ -21,6 +22,7 @@ def test_settings_load_defaults(monkeypatch: MonkeyPatch) -> None:
     assert settings.app_env == "dev"
     assert settings.log_level == "INFO"
     assert settings.timezone == "Asia/Kolkata"
+    assert settings.top_n == 10
     assert settings.telegram_bot_token is None
     assert settings.telegram_chat_id is None
 
@@ -28,7 +30,9 @@ def test_settings_load_defaults(monkeypatch: MonkeyPatch) -> None:
 def test_settings_environment_override(monkeypatch: MonkeyPatch) -> None:
     """Environment variables override the configured defaults."""
     monkeypatch.setenv("APP_ENV", "production")
+    monkeypatch.setenv("TOP_N", "5")
 
     settings = Settings()
 
     assert settings.app_env == "production"
+    assert settings.top_n == 5
