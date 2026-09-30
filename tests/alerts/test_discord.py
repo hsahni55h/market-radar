@@ -1,5 +1,6 @@
 """Tests for Discord webhook alert delivery."""
 
+import logging
 from datetime import UTC, datetime
 from typing import cast
 
@@ -13,6 +14,7 @@ from market_radar.alerts.discord import (
     build_payload,
 )
 from market_radar.alerts.message import AlertMessage, AlertSection
+from market_radar.logging_config import configure_logging
 
 
 def message() -> AlertMessage:
@@ -138,3 +140,24 @@ def test_notifier_hides_webhook_url_when_connection_is_reset(
     assert error.value.__cause__ is None
     assert "https://discord.com" not in str(error.value)
     assert "https://discord.com" not in caplog.text
+
+
+def test_configure_logging_keeps_webhook_url_out_of_logs(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """httpx request logging never emits the webhook URL, even at INFO level."""
+    webhook = "https://discord.com/api/webhooks/secret-id/secret-token"
+    client = httpx.Client(transport=httpx.MockTransport(lambda request: httpx.Response(204)))
+    notifier = DiscordNotifier(SecretStr(webhook), client=client)
+
+    configure_logging("INFO")
+    with caplog.at_level(logging.INFO):
+        notifier.send(message())
+
+    assert "secret-id" not in caplog.text
+    assert "secret-token" not in caplog.text
+    for record in caplog.records:
+        rendered = record.getMessage()
+        assert webhook not in rendered
+        assert "secret-id" not in rendered
+        assert "secret-token" not in rendered
