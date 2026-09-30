@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from market_radar.universe import Instrument, load_universe, to_provider_symbol
+from market_radar.universe import Instrument, load_universe
 
 REFERENCE_CSV = Path(__file__).parents[1] / "data" / "reference" / "nifty500.csv"
 
@@ -52,8 +52,3 @@ def test_load_universe_rejects_missing_required_value(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="Missing value for 'Symbol' at row 2"):
         load_universe(csv_path)
-
-
-def test_to_provider_symbol_adds_nse_suffix() -> None:
-    """NSE symbols use the provider's .NS suffix."""
-    assert to_provider_symbol("RELIANCE") == "RELIANCE.NS"

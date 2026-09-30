@@ -46,11 +46,6 @@ def load_universe(path: Path) -> list[Instrument]:
     return instruments
 
 
-def to_provider_symbol(symbol: str) -> str:
-    """Convert an NSE symbol to the provider's NSE ticker format."""
-    return f"{symbol}.NS"
-
-
 def _required_value(row: Mapping[str, str | list[str] | None], column: str, row_number: int) -> str:
     value = row.get(column)
     if not isinstance(value, str) or not value.strip():
